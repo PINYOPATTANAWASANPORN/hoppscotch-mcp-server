@@ -192,7 +192,7 @@ export class RequestRepository {
     const key = type === CollectionType.REST ? 'updateRESTUserRequest' : 'updateGQLUserRequest';
 
     const normalizedRequest = data.request
-      ? this.normalizeRequestPayload(data.request, data.title ?? '', type)
+      ? this.normalizeRequestPayload(data.request, data.title, type)
       : data.request;
 
     const result = await this.client.graphql<Record<string, UserRequest>>(mutation, {
@@ -258,7 +258,7 @@ export class RequestRepository {
    */
   private normalizeRequestPayload(
     requestJson: string,
-    title: string,
+    title?: string,
     type: CollectionType = CollectionType.REST
   ): string {
     try {
@@ -267,14 +267,16 @@ export class RequestRepository {
         return requestJson;
       }
 
+      const resolvedName = (title && title.trim().length > 0) ? title : (typeof parsed.name === 'string' && parsed.name.trim().length > 0 ? parsed.name : 'Untitled');
+
       if (type === CollectionType.GQL) {
         const normalizedGql: Record<string, unknown> = {
-          v: 7,
-          name: title,
+          v: 9,
+          name: resolvedName,
           url: 'https://echo.hoppscotch.io/graphql',
           headers: [],
-          variables: '',
-          query: '',
+          variables: '{\n  "id": "1"\n}',
+          query: 'query Request {\n  method\n  url\n  headers {\n    key\n    value\n  }\n}',
           auth: {
             authType: 'inherit',
             authActive: true,
@@ -291,9 +293,9 @@ export class RequestRepository {
       }
 
       const normalizedRest: Record<string, unknown> = {
-        v: 16,
+        v: '17',
         endpoint: 'https://echo.hoppscotch.io',
-        name: title,
+        name: resolvedName,
         params: [],
         headers: [],
         method: 'GET',

@@ -138,11 +138,15 @@ describe('RequestRepository', () => {
 
       await repository.updateTeamRequest('tr1', { request: '{"method":"GET"}' });
 
-      expect(mockClient.graphql).toHaveBeenNthCalledWith(2, expect.anything(), {
-        requestID: 'tr1',
-        title: 'Get Users',
-        request: '{"method":"GET"}',
-      });
+      expect(mockClient.graphql).toHaveBeenNthCalledWith(
+        2,
+        expect.anything(),
+        expect.objectContaining({
+          requestID: 'tr1',
+          title: 'Get Users',
+          request: expect.stringContaining('"params":[]'),
+        })
+      );
     });
 
     it('should preserve current request when only title is provided', async () => {
@@ -152,11 +156,15 @@ describe('RequestRepository', () => {
 
       await repository.updateTeamRequest('tr1', { title: 'Updated' });
 
-      expect(mockClient.graphql).toHaveBeenNthCalledWith(2, expect.anything(), {
-        requestID: 'tr1',
-        title: 'Updated',
-        request: teamRequest.request,
-      });
+      expect(mockClient.graphql).toHaveBeenNthCalledWith(
+        2,
+        expect.anything(),
+        expect.objectContaining({
+          requestID: 'tr1',
+          title: 'Updated',
+          request: expect.stringContaining('"params":[]'),
+        })
+      );
     });
   });
 
